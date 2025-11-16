@@ -1,13 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -44,10 +42,10 @@ model User {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   lastLogin         DateTime?
-  
+
   dokter            Dokter?
   auditTrail        AuditTrail[]
-  
+
   @@index([email])
   @@index([role])
 }
@@ -59,7 +57,7 @@ model AuditTrail {
   action    String
   modul     String
   timestamp DateTime @default(now())
-  
+
   @@index([userId])
   @@index([timestamp])
 }
@@ -89,36 +87,36 @@ model Pasien {
   noHubunganDarurat     String?
   asuransi              String?
   noAsuransi            String?
-  statusAsuransi        String? // AKTIF / TIDAK_AKTIF
+  statusAsuransi        String?
   catatanMedis          String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
-  
+
   kunjungan             Kunjungan[]
   resep                 Resep[]
   permintaanLab         PermintaanLab[]
   hasilLab              HasilLab[]
   rawatInap             RawatInap[]
   visiasi               Visiasi[]
-  
+
   @@index([nomorRekamMedis])
   @@index([nik])
   @@index([nama])
 }
 
 model Kunjungan {
-  id            String   @id @default(cuid())
-  pasienId      String
-  pasien        Pasien   @relation(fields: [pasienId], references: [id], onDelete: Cascade)
-  dokterDinas   String?
-  keluhan       String
-  tipeKunjungan String // RAWAT_JALAN / IGD / RAWAT_INAP
-  diagnosis     String?
-  terapi        String?
+  id               String   @id @default(cuid())
+  pasienId         String
+  pasien           Pasien   @relation(fields: [pasienId], references: [id], onDelete: Cascade)
+  dokterDinas      String?
+  keluhan          String
+  tipeKunjungan    String
+  diagnosis        String?
+  terapi           String?
   tanggalKunjungan DateTime @default(now())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
   @@index([pasienId])
   @@index([tanggalKunjungan])
 }
@@ -134,46 +132,46 @@ model Dokter {
   noHP          String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   jadwal        JadwalDokter[]
-  
+
   @@index([nip])
 }
 
 model JadwalDokter {
-  id        String   @id @default(cuid())
-  dokterID  String
-  dokter    Dokter   @relation(fields: [dokterID], references: [id], onDelete: Cascade)
-  hari      String   // SENIN, SELASA, dst
-  jamMulai  String   // HH:MM
-  jamSelesai String  // HH:MM
+  id         String   @id @default(cuid())
+  dokterID   String
+  dokter     Dokter   @relation(fields: [dokterID], references: [id], onDelete: Cascade)
+  hari       String
+  jamMulai   String
+  jamSelesai String
   poliklinik String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   @@index([dokterID])
 }
 
 model Obat {
-  id              String   @id @default(cuid())
-  kodeObat        String   @unique
-  nama            String
-  jenis           String
-  satuan          String   // TABLET / BOTOL / VIAL / dst
-  harga           Float
-  stokSekarang    Int
-  stokMinimal     Int      @default(10)
-  namaPabrik      String?
-  nomorBatch      String?
+  id                String   @id @default(cuid())
+  kodeObat          String   @unique
+  nama              String
+  jenis             String
+  satuan            String
+  harga             Float
+  stokSekarang      Int
+  stokMinimal       Int      @default(10)
+  namaPabrik        String?
+  nomorBatch        String?
   tanggalKadaluarsa DateTime?
-  deskripsi       String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  resepObat       ResepObat[]
-  logStok         LogStokObat[]
-  
+  deskripsi         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  resepObat         ResepObat[]
+  logStok           LogStokObat[]
+
   @@index([kodeObat])
   @@index([nama])
   @@index([stokSekarang])
@@ -183,28 +181,28 @@ model LogStokObat {
   id        String   @id @default(cuid())
   obatId    String
   obat      Obat     @relation(fields: [obatId], references: [id], onDelete: Cascade)
-  tipe      String   // MASUK / KELUAR / RUSAK / HILANG
+  tipe      String
   jumlah    Int
   keterangan String?
   tanggal   DateTime @default(now())
-  
+
   @@index([obatId])
 }
 
 model Resep {
-  id            String   @id @default(cuid())
-  nomorResep    String   @unique
-  pasienId      String
-  pasien        Pasien   @relation(fields: [pasienId], references: [id], onDelete: Cascade)
-  dokterDinas   String
-  tanggalResep  DateTime @default(now())
-  catatanResep  String?
-  statusResep   String   @default("PENDING") // PENDING / SELESAI / BATAL
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  obat          ResepObat[]
-  
+  id           String   @id @default(cuid())
+  nomorResep   String   @unique
+  pasienId     String
+  pasien       Pasien   @relation(fields: [pasienId], references: [id], onDelete: Cascade)
+  dokterDinas  String
+  tanggalResep DateTime @default(now())
+  catatanResep String?
+  statusResep  String   @default("PENDING")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  obat         ResepObat[]
+
   @@index([pasienId])
   @@index([nomorResep])
 }
@@ -216,8 +214,8 @@ model ResepObat {
   obatId    String
   obat      Obat   @relation(fields: [obatId], references: [id], onDelete: Cascade)
   jumlah    Int
-  aturan    String // 3x1 tablet, dst
-  
+  aturan    String
+
   @@index([resepId])
   @@index([obatId])
 }
@@ -228,117 +226,117 @@ model PermintaanLab {
   pasienId          String
   pasien            Pasien   @relation(fields: [pasienId], references: [id], onDelete: Cascade)
   dokterDinas       String
-  jenisPermintaan   String   // LABORATORIUM / RADIOLOGI
-  tipePermeriksaan  String   // DARAH / USG / FOTO_PARU / dst
+  jenisPermintaan   String
+  tipePermeriksaan  String
   indikasi          String?
-  prioritas         String   @default("NORMAL") // NORMAL / URGENT
-  statusPermintaan  String   @default("PENDING") // PENDING / PROSES / SELESAI / BATAL
+  prioritas         String   @default("NORMAL")
+  statusPermintaan  String   @default("PENDING")
   tanggalPermintaan DateTime @default(now())
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
+
   hasilLab          HasilLab[]
-  
+
   @@index([pasienId])
   @@index([nomorPermintaan])
 }
 
 model HasilLab {
-  id                    String   @id @default(cuid())
-  nomorHasil            String   @unique
-  permintaanId          String
-  permintaan            PermintaanLab @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
-  pasienId              String
-  pasien                Pasien   @relation(fields: [pasienId], references: [id], onDelete: Cascade)
-  petugasInput          String
-  hasil                 String   // JSON string untuk hasil dinamis
-  nilaiReferensi        String?
-  kesimpulan            String?
-  tanggalHasil          DateTime @default(now())
-  statusHasil           String   @default("PROSES") // PROSES / SELESAI
-  fileHasil             String?  // URL untuk PDF hasil
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  
+  id             String   @id @default(cuid())
+  nomorHasil     String   @unique
+  permintaanId   String
+  permintaan     PermintaanLab @relation(fields: [permintaanId], references: [id], onDelete: Cascade)
+  pasienId       String
+  pasien         Pasien   @relation(fields: [pasienId], references: [id], onDelete: Cascade)
+  petugasInput   String
+  hasil          String
+  nilaiReferensi String?
+  kesimpulan     String?
+  tanggalHasil   DateTime @default(now())
+  statusHasil    String   @default("PROSES")
+  fileHasil      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
   @@index([pasienId])
   @@index([permintaanId])
 }
 
 model Kamar {
-  id              String   @id @default(cuid())
-  nomorKamar      String   @unique
-  tipeKamar       String   // KELAS_1 / KELAS_2 / KELAS_3
-  kapasitas       Int      @default(1)
-  terisiSekarang  Int      @default(0)
-  hargaPerHari    Float
-  status          String   @default("KOSONG") // KOSONG / TERISI / PERBAIKAN
-  fasilitas       String?
-  catatan         String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  rawatInap       RawatInap[]
-  
+  id             String   @id @default(cuid())
+  nomorKamar     String   @unique
+  tipeKamar      String
+  kapasitas      Int      @default(1)
+  terisiSekarang Int      @default(0)
+  hargaPerHari   Float
+  status         String   @default("KOSONG")
+  fasilitas      String?
+  catatan        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  rawatInap      RawatInap[]
+
   @@index([nomorKamar])
   @@index([status])
 }
 
 model RawatInap {
-  id            String   @id @default(cuid())
-  pasienId      String
-  pasien        Pasien   @relation(fields: [pasienId], references: [id], onDelete: Cascade)
-  kamarId       String
-  kamar         Kamar    @relation(fields: [kamarId], references: [id], onDelete: Restrict)
-  tanggalMasuk  DateTime @default(now())
-  tanggalKeluar DateTime?
-  diagnosaAwal  String
-  statusRawatInap String @default("MASUK") // MASUK / PULANG / LARI / MENINGGAL
-  catatan       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  visite        Visiasi[]
-  
+  id             String   @id @default(cuid())
+  pasienId       String
+  pasien         Pasien   @relation(fields: [pasienId], references: [id], onDelete: Cascade)
+  kamarId        String
+  kamar          Kamar    @relation(fields: [kamarId], references: [id], onDelete: Restrict)
+  tanggalMasuk   DateTime @default(now())
+  tanggalKeluar  DateTime?
+  diagnosaAwal   String
+  statusRawatInap String  @default("MASUK")
+  catatan        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  visite         Visiasi[]
+
   @@index([pasienId])
   @@index([kamarId])
 }
 
 model Visiasi {
-  id          String   @id @default(cuid())
-  rawatInapId String
-  rawatInap   RawatInap @relation(fields: [rawatInapId], references: [id], onDelete: Cascade)
-  pasienId    String
-  pasien      Pasien   @relation(fields: [pasienId], references: [id], onDelete: Cascade)
-  dokterDinas String
+  id            String   @id @default(cuid())
+  rawatInapId   String
+  rawatInap     RawatInap @relation(fields: [rawatInapId], references: [id], onDelete: Cascade)
+  pasienId      String
+  pasien        Pasien     @relation(fields: [pasienId], references: [id], onDelete: Cascade)
+  dokterDinas   String
   tanggalVisite DateTime @default(now())
-  subjektif   String?  // S (SOAP)
-  objektif    String?  // O (SOAP)
-  asesment    String?  // A (SOAP)
-  planning    String?  // P (SOAP)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  subjektif     String?
+  objektif      String?
+  asesment      String?
+  planning      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   @@index([rawatInapId])
   @@index([pasienId])
 }
 
 model Barang {
-  id            String   @id @default(cuid())
-  kodeBarang    String   @unique
-  nama          String
-  kategori      String   // ALAT_MEDIS / BAHAN_HABIS / LINEN / dst
-  satuan        String
-  harga         Float
-  stokSekarang  Int
-  stokMinimal   Int      @default(5)
-  lokasi        String?
-  supplier      String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  logStok       LogStokBarang[]
+  id              String   @id @default(cuid())
+  kodeBarang      String   @unique
+  nama            String
+  kategori        String
+  satuan          String
+  harga           Float
+  stokSekarang    Int
+  stokMinimal     Int      @default(5)
+  lokasi          String?
+  supplier        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  logStok         LogStokBarang[]
   permintaanBarang PermintaanBarang[]
-  
+
   @@index([kodeBarang])
   @@index([nama])
 }
@@ -347,11 +345,11 @@ model LogStokBarang {
   id        String   @id @default(cuid())
   barangId  String
   barang    Barang   @relation(fields: [barangId], references: [id], onDelete: Cascade)
-  tipe      String   // MASUK / KELUAR / OPNAME / RUSAK
+  tipe      String
   jumlah    Int
   keterangan String?
   tanggal   DateTime @default(now())
-  
+
   @@index([barangId])
 }
 
@@ -364,23 +362,23 @@ model PermintaanBarang {
   jumlah            Int
   keperluan         String?
   prioritas         String   @default("NORMAL")
-  statusPermintaan  String   @default("PENDING") // PENDING / DISETUJUI / DITOLAK / SELESAI
+  statusPermintaan  String   @default("PENDING")
   tanggalPermintaan DateTime @default(now())
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
+
   @@index([barangId])
   @@index([nomorPermintaan])
 }
 
 model Statistik {
-  id                String   @id @default(cuid())
-  tipe              String   // PASIEN / KUNJUNGAN / OBAT / KAMAR
-  bulan             Int
-  tahun             Int
-  jumlah            Int
-  data              String?  // JSON untuk data detail
-  lastUpdated       DateTime @default(now())
-  
+  id          String   @id @default(cuid())
+  tipe        String
+  bulan       Int
+  tahun       Int
+  jumlah      Int
+  data        String?
+  lastUpdated DateTime @default(now())
+
   @@unique([tipe, bulan, tahun])
 }
