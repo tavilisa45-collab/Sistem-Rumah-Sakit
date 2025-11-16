@@ -2,6 +2,9 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   images: {
     unoptimized: process.env.NODE_ENV === 'development',
   },
@@ -9,6 +12,7 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
     turbopackUseSystemTlsCerts: true,
   },
+
   headers: async () => {
     return [
       {

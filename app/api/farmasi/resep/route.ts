@@ -74,7 +74,6 @@ export async function createResep(request: NextRequest) {
         catatanResep,
         obat: {
           createMany: {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: obatList.map((item: any) => ({
               obatId: item.obatId,
               jumlah: item.jumlah,
