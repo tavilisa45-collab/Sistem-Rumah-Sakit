@@ -5,7 +5,7 @@
   "type": "module",
   "engines": {
   "node": ">=18 <21"
-}
+},
   "scripts": {
     "dev": "next dev",
     "build": "next build && next export",
