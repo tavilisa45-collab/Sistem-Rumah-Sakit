@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: process.env.NODE_ENV === 'development',
+    unoptimized: true,
   },
   experimental: {
     optimizeCss: true,
